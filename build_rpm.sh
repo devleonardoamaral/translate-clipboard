@@ -25,12 +25,9 @@ rm -rf "$RPMBUILD_ROOT"
 mkdir -p "$RPMBUILD_ROOT"/{BUILD,RPMS,SOURCES,BUILDROOT,SPECS}
 cp "$SRC" "$RPMBUILD_ROOT/SOURCES/"
 
-# Generate current Unix timestamp
-SOURCE_DATE_EPOCH=$(date +%s)
-
+# Build package
 rpmbuild -bb \
     --define "_topdir $(pwd)/$RPMBUILD_ROOT" \
-    --define "_source_date_epoch $SOURCE_DATE_EPOCH" \
     rpm/SPECS/$APP_NAME.spec
 
 echo "RPM build finished. Check $RPMBUILD_ROOT/RPMS/noarch/"
