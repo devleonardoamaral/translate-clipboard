@@ -1,0 +1,10 @@
+#!/bin/bash
+# DEBIAN postrm script
+
+# Only remove user config if the package is being purged
+if [ "$1" = "purge" ]; then
+    for user_home in /home/*; do
+        config="$user_home/.translate-clipboard.conf"
+        [ -f "$config" ] && rm -f "$config"
+    done
+fi

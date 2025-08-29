@@ -1,0 +1,213 @@
+#!/usr/bin/env bash
+
+# Ensure GTK uses X11 backend (required for YAD)
+export GDK_BACKEND="x11"
+
+# Configuration file to store the last selected language
+CONFIG_FILE="$HOME/.translate-clipboard.conf"
+
+# ------------------------------------------------------------
+# Function: get_clipboard
+# Description:
+#   Retrieves the current content of the system clipboard.
+#   Uses 'xclip' to read from the clipboard, with a fallback to empty string.
+# Returns:
+#   Clipboard content as a string.
+# ------------------------------------------------------------
+get_clipboard() {
+    xclip -o -selection clipboard 2>/dev/null || echo ""
+}
+
+# ------------------------------------------------------------
+# Function: get_trans_lang_list
+# Description:
+#   Fetches the list of all language codes supported by translate-shell.
+# Returns:
+#   A newline-separated list of language codes (e.g., "en", "pt-BR").
+# ------------------------------------------------------------
+get_trans_lang_list() {
+    echo "$(trans -list-codes)"
+}
+
+# ------------------------------------------------------------
+# Function: to_trans_lang
+# Description:
+#   Converts a language code to a format compatible with translate-shell.
+#   Specifically, replaces underscores with hyphens.
+# Parameters:
+#   $1 - Input language code (e.g., "pt_BR").
+# Returns:
+#   Language code formatted for translate-shell (e.g., "pt-BR").
+# ------------------------------------------------------------
+to_trans_lang() {
+    local lang="$1"
+    lang="${lang//_/-}"  # Replace underscores with hyphens
+    echo "$lang"
+}
+
+# ------------------------------------------------------------
+# Function: get_sys_lang
+# Description:
+#   Determines the system's default language from environment variables.
+#   Falls back to "en_US.UTF-8" if none are set.
+# Returns:
+#   System language code (e.g., "en_US").
+# ------------------------------------------------------------
+get_sys_lang() {
+    local lang="${LANGUAGE:-${LC_MESSAGES:-$LANG}}"
+
+    # Fallback if no language is defined
+    [ -z "$lang" ] && lang="en_US.UTF-8"
+
+    # Remove encoding (e.g., ".UTF-8")
+    lang="${lang%%.*}"
+
+    # Remove any colon suffix (rare case)
+    lang="${lang%%\:*}"
+
+    echo "$lang"
+}
+
+# ------------------------------------------------------------
+# Function: fetch_sys_trans_lang
+# Description:
+#   Fetches the system language and converts it to a format compatible with translate-shell.
+# Returns:
+#   System language formatted for translate-shell (e.g., "en-US").
+# ------------------------------------------------------------
+fetch_sys_trans_lang() {
+    echo "$(to_trans_lang "$(get_sys_lang)")"
+}
+
+# ------------------------------------------------------------
+# Function: load_lang
+# Description:
+#   Loads the user's preferred language from configuration file.
+#   If no config exists, falls back to system language.
+# Returns:
+#   Preferred language code.
+# ------------------------------------------------------------
+load_lang() {
+    if [ -f "$CONFIG_FILE" ]; then
+        cat "$CONFIG_FILE"
+    else
+        fetch_sys_trans_lang
+    fi
+}
+
+# ------------------------------------------------------------
+# Function: save_lang
+# Description:
+#   Saves the user's selected language to a configuration file.
+# Parameters:
+#   $1 - Language code to save.
+# ------------------------------------------------------------
+save_lang() {
+    local lang="$1"
+    echo "$lang" > "$CONFIG_FILE"
+}
+
+# ------------------------------------------------------------
+# Function: translate
+# Description:
+#   Translates input text using translate-shell (trans).
+# Parameters:
+#   $1 - Text to translate.
+#   $2 - Language code (optional, defaults to system or saved language).
+# Returns:
+#   Translated text, or non-zero exit code if translation fails.
+# ------------------------------------------------------------
+translate() {
+    local text="$1"
+    local lang="${2:-$(fetch_sys_trans_lang)}"
+    local result
+
+    if ! result="$(trans -b :"$lang" "$text")"; then
+        return 1
+    fi
+
+    echo "$result"
+}
+
+# ------------------------------------------------------------
+# Function: set_item_on_top
+# Description:
+#   Reorders a list of items from stdin by placing a specified item at the top.
+#   All other items retain their original order and duplicates of the top item are ignored.
+# Parameters:
+#   $1 - Item to place on top.
+# Input:
+#   List of items via stdin (one per line).
+# Output:
+#   Reordered list with the specified item at the top.
+# ------------------------------------------------------------
+set_item_on_top() {
+    local item="$1"
+    echo "$item"                       # Print the top item first
+    awk -v l="$item" '$0!=l{print}'    # Print remaining lines excluding duplicates
+}
+
+# ------------------------------------------------------------
+# Function: get_yad_lang_options
+# Description:
+#   Prepares the language options for the YAD ComboBox widget.
+#   Ensures that the currently selected language appears at the top.
+# Parameters:
+#   $1 - Currently selected language.
+# Returns:
+#   Language options formatted as a single string separated by "!" for YAD.
+# ------------------------------------------------------------
+get_yad_lang_options() {
+    echo "$(get_trans_lang_list | set_item_on_top "$1" | tr '\n' '!' | sed 's/!$//')"
+}
+
+# ------------------------------------------------------------
+# Function: main
+# Description:
+#   Main application loop.
+#   Displays a YAD form for translating text from the clipboard.
+#   Allows the user to edit text, select a language, and see translation results.
+#   Updates the saved language preference automatically.
+# ------------------------------------------------------------
+main() {
+    local text result lang lang_options form_result lang_selected
+
+    # Load saved language or fallback to system language
+    lang="$(load_lang)"
+
+    # Initial text from clipboard
+    text="$(get_clipboard)"
+
+    # Prepare language options for YAD ComboBox
+    lang_options="$(get_yad_lang_options "$lang")"
+
+    # Main interactive loop
+    while true; do
+        # Translate text; fallback message if translation fails
+        result="$(translate "$text" "$lang")" || result="Translation failed."
+
+        # Display YAD form with text, translation, and language selection
+        form_result="$(yad --form \
+            --title="Translator ($lang)" \
+            --width=400 --height=400 \
+            --field="Text to translate":TXT "$text" \
+            --field="Translation":TXT "$result" \
+            --field="Language":CB "$lang_options" \
+            --button="Translate":0 \
+            --button="Exit":1 \
+        )" || break
+
+        # Extract user inputs from YAD output (pipe-separated)
+        IFS='|' read -r text _ lang_selected <<< "$form_result"
+
+        # Update language and save for future sessions
+        lang="$lang_selected"
+        save_lang "$lang"
+
+        # Refresh language options to reflect the new top language
+        lang_options="$(get_yad_lang_options "$lang")"
+    done
+}
+
+# Run the application
+main

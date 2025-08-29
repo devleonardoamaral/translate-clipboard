@@ -1,0 +1,12 @@
+Package: translate-clipboard
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: bash, yad, xclip, translate-shell
+Maintainer: Leonardo Amaral <leonardo_amaral98@hotmail.com>
+Homepage: https://github.com/devleonardoamaral/translate-clipboard
+Description: Clipboard translator with yad GUI using translate-shell.
+ A lightweight Bash script that translates clipboard content and allows
+ language selection with persistent preference. Supports editing the text
+ before translation with a simple YAD GUI.

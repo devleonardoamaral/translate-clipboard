@@ -1,0 +1,4 @@
+deb_build/
+rpm_build/
+
+*.deb
