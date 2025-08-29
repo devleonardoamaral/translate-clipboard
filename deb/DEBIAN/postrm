@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # DEBIAN postrm script
 
 # Only remove user config if the package is being purged
