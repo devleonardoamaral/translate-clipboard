@@ -35,7 +35,7 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %files
-/usr/local/bin/translate-clipboard
+/usr/bin/translate-clipboard
 
 %changelog
 * Thu Aug 29 2025 Your Name <leonardo_amaral98@hotmail.com> - 1.0.0-1
