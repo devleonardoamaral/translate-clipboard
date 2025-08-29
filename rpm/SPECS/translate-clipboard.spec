@@ -36,7 +36,3 @@ fi
 
 %files
 /usr/bin/translate-clipboard
-
-%changelog
-* Thu Aug 29 2025 Your Name <leonardo_amaral98@hotmail.com> - 1.0.0-1
-- Initial release
