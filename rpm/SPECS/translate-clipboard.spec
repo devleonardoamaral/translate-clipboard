@@ -9,6 +9,8 @@ Source0:        translate-clipboard
 BuildArch:      noarch
 Requires:       bash, yad, xclip, translate-shell
 
+%undefine _source_date_epoch_from_changelog
+
 %description
 Clipboard translator with yad GUI using translate-shell.
 A lightweight Bash script that translates clipboard content and allows
