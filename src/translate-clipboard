@@ -188,7 +188,7 @@ main() {
 
         # Display YAD form with text, translation, and language selection
         form_result="$(yad --form \
-            --title="Translator ($lang)" \
+            --title="Translate Clipboard" \
             --width=400 --height=400 \
             --field="Input":TXT "$text" \
             --field="Output":TXT "$result" \
