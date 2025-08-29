@@ -20,11 +20,11 @@ before translation with a simple YAD GUI.
 
 %install
 # Create target directory in build root
-mkdir -p %{buildroot}/usr/local/bin
+mkdir -p %{buildroot}/usr/bin
 # Copy the script into build root
-cp %{SOURCE0} %{buildroot}/usr/local/bin/translate-clipboard
+cp %{SOURCE0} %{buildroot}/usr/bin/translate-clipboard
 # Ensure executable permission
-chmod +x %{buildroot}/usr/local/bin/translate-clipboard
+chmod +x %{buildroot}/usr/bin/translate-clipboard
 
 %postun
 if [ "$1" -eq 0 ]; then

@@ -12,9 +12,9 @@ SRC="src/$APP_NAME"
 # ----------------------------
 DEB_DIR="deb_build"
 rm -rf "$DEB_DIR"
-mkdir -p "$DEB_DIR/usr/local/bin"
-cp "$SRC" "$DEB_DIR/usr/local/bin/"
-chmod +x "$DEB_DIR/usr/local/bin/$APP_NAME"
+mkdir -p "$DEB_DIR/usr/bin"
+cp "$SRC" "$DEB_DIR/usr/bin/"
+chmod +x "$DEB_DIR/usr/bin/$APP_NAME"
 
 # Copy DEBIAN folder
 cp -r deb/DEBIAN "$DEB_DIR/"
