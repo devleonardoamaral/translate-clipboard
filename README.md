@@ -46,6 +46,19 @@ After installation, optionally configure a shortcut in your desktop environment 
 
 <img src="data/screenshots/gnome-shortcut.png" alt="GNOME shortcut setup">
 
+## Uninstallation
+
+### On Debian/Ubuntu
+```bash
+sudo apt purge translate-clipboard
+```
+
+### On Fedora
+
+```bash
+sudo dnf remove translate-clipboard
+```
+
 ## Usage
 
 * Copy text to your clipboard.
