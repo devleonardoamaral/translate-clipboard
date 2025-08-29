@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ensure tools installed
+if ! rpm -q rpm-build >/dev/null 2>&1; then
+    if ! pkexec dnf install -y rpm-build; then
+        echo "rpm-build installation failed."
+        exit 1
+    fi
+fi
+
 APP_NAME="translate-clipboard"
 VERSION="1.0.0"
 
